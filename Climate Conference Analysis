@@ -1,0 +1,49 @@
+-- List all VIPs and their event names, including those who are not assigned to any event
+SELECT vips.first_name, vips.last_name, events.event_name
+FROM vips
+LEFT JOIN events ON vips.event = events.event_id; 
+
+-- Find all VIPs who have made a hotel reservation, showing their names and hotel names
+SELECT vips.first_name, vips.last_name, hotels.hotel_name
+FROM vips
+INNER JOIN reservations
+ON vips.member_id = reservations.member_id
+INNER JOIN hotels ON reservations.hotel = hotels.hotel_id; 
+
+-- Show all VIPs, their reserved hotels, and the events they are attending
+SELECT  vips.first_name, vips.last_name, hotels.hotel_name, events.event_name
+FROM vips
+LEFT JOIN events 
+ON vips.event = events.event_id
+LEFT JOIN reservations
+ON vips.member_id = reservations.member_id
+LEFT JOIN hotels 
+ON reservations.hotel = hotels.hotel_id; 
+
+-- List VIPs who provide feedback to someone attending the "Urban Resilience" workshop
+SELECT first_name, last_name, provides_feedback_to
+FROM vips
+WHERE vips.provides_feedback_to IN (SELECT member_id FROM vips WHERE event = (SELECT event_id FROM events  WHERE event_name = 'Urban Resilience: Designing Climate-Smart Cities')
+);
+
+-- Find pairs of VIPs who are in the same association
+SELECT v1.first_name AS vip1_first, v1.last_name AS vip1_last, 
+       v2.first_name AS vip2_first, v2.last_name AS vip2_last, 
+       v1.association
+FROM vips v1
+JOIN vips v2 ON v1.association = v2.association AND v1.member_id <> v2.member_id
+ORDER BY v1.association;
+
+-- List VIPs who RSVPed for the welcome event but not for dinner
+SELECT first_name, last_name
+FROM vips
+JOIN reservations ON vips.member_id = reservations.member_id
+WHERE welcome_rsvp = '1'
+AND dinner_rsvp = '0'; 
+
+-- Find which events have the most attendees
+SELECT events.event_name, COUNT(vips.member_id) AS attendee_count
+FROM events
+LEFT JOIN vips ON vips.event = events.event_id
+GROUP BY events.event_name
+ORDER BY attendee_count desc; 
